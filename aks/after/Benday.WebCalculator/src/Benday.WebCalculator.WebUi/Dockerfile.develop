@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0
+ARG BUILD_CONFIGURATION=Debug
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+
+WORKDIR /src
+COPY ["src/Benday.WebCalculator.Api/Benday.WebCalculator.Api.csproj", "src/Benday.WebCalculator.Api/"]
+COPY ["src/Benday.WebCalculator.WebUi/Benday.WebCalculator.WebUi.csproj", "src/Benday.WebCalculator.WebUi/"]
+
+RUN dotnet restore "src/Benday.WebCalculator.WebUi/Benday.WebCalculator.WebUi.csproj"
+COPY . .
+WORKDIR "/src/src/Benday.WebCalculator.WebUi"
+RUN dotnet build --no-restore "Benday.WebCalculator.WebUi.csproj" -c $BUILD_CONFIGURATION
+
+RUN echo "exec dotnet run --no-build --no-launch-profile -c $BUILD_CONFIGURATION --" > /entrypoint.sh
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
